@@ -81,6 +81,7 @@
       <DependentUpon>Form4.cs</DependentUpon>
     </Compile>
     <Compile Include="Mail.cs" />
+    <Compile Include="MailWrapper.cs" />
     <Compile Include="nMail.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
