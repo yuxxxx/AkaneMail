@@ -1459,9 +1459,7 @@ namespace AkaneMail
                         return;
 
                     // 選択アイテムのキーを取得
-                    int[] nIndices = new int[nLen];
-
-                    var nIndecies = Enumerable.Range(0, nLen).Select(n => int.Parse(listView1.SelectedItems[n].Name)).ToArray();
+                    var nIndices = Enumerable.Range(0, nLen).Select(n => int.Parse(listView1.SelectedItems[n].Name)).ToArray();
 
                     // キーの並べ替え
                     Array.Sort(nIndices);
@@ -1558,7 +1556,7 @@ namespace AkaneMail
                 var nIndices = Enumerable.Range(0, nLen).Select(i => listView1.SelectedItems[i].Name).Select(t => int.Parse(t)).OrderBy(i => i).ToArray();
 
                 // キーの並べ替え
-                List<Mail> sList = collectionMail[SEND];
+                var sList = collectionMail[SEND];
 
                 while (nLen > 0) {
                     // 選択アイテムのキーから 選択アイテム群の位置を取得
@@ -2324,15 +2322,7 @@ namespace AkaneMail
             }
 
             // どの項目でも保存できるように変更
-            if(listView1.Columns[0].Text == "差出人"){
-                mail = collectionMail[RECEIVE][(int)item.Tag];
-            }
-            else if(listView1.Columns[0].Text == "宛先"){
-                mail = collectionMail[SEND][(int)item.Tag];
-            }
-            else if(listView1.Columns[0].Text == "差出人または宛先"){
-                mail = collectionMail[DELETE][(int)item.Tag];
-            }
+            mail = GetSelectedMail(item.Tag, listView1.Columns[0].Text);
 
             // ファイル名にメールの件名を入れる
             saveFileDialog1.FileName = mail.subject;
@@ -2435,19 +2425,9 @@ namespace AkaneMail
 
         private void buttonAttachList_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
-            Mail mail = null;
             ListViewItem item = listView1.SelectedItems[0];
 
-            // 選択している場所によって添付を開く動作が変わるため追加
-            if(listView1.Columns[0].Text == "差出人"){
-                mail = collectionMail[RECEIVE][(int)item.Tag];
-            }
-            else if(listView1.Columns[0].Text == "宛先"){
-                mail = collectionMail[SEND][(int)item.Tag];
-            }
-            else if(listView1.Columns[0].Text == "差出人または宛先"){
-                mail = collectionMail[DELETE][(int)item.Tag];
-            }
+            var mail = GetSelectedMail(item.Tag, listView1.Columns[0].Text);
 
             // ファイルを開くかの確認をする
             if(MessageBox.Show(e.ClickedItem.Text + "を開きますか？\nファイルによってはウイルスの可能性もあるため\n注意してファイルを開いてください。", "確認", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes){
@@ -2488,7 +2468,7 @@ namespace AkaneMail
         private void Form1_ClientSizeChanged(object sender, EventArgs e)
         {
             // 最小化時にタスクトレイに格納フラグがtrueでウィンドウが最小化されたとき
-            if(this.WindowState == System.Windows.Forms.FormWindowState.Minimized && Mail.minimizeTaskTray == true){
+            if(this.WindowState == System.Windows.Forms.FormWindowState.Minimized && Mail.minimizeTaskTray){
                 // フォームが最小化の状態であればフォームを非表示にする   
                 this.Hide();
                 // トレイリストのアイコンを表示する   
@@ -2512,31 +2492,14 @@ namespace AkaneMail
 
         private void menuFile_DropDownOpening(object sender, EventArgs e)
         {
-            // メールの選択数が0またはメールボックスのとき
-            if (listView1.SelectedItems.Count == 0 || listView1.Columns[0].Text == "名前") {
-                menuSaveMailFile.Enabled = false;
-                menuFileGetAttatch.Enabled = false;
-            } else if (listView1.SelectedItems.Count == 1) {
-                // メールが1件選択されたとき
-                menuSaveMailFile.Enabled = true;
-                // 添付ファイルメニューが開いているとき
-                if (attachMenuFlag == true) {
-                    menuFileGetAttatch.Enabled = true;
-                } else {
-                    menuFileGetAttatch.Enabled = false;
-                }
-            } else {
-                // メールが複数件選択されたとき
-                menuSaveMailFile.Enabled = false;
-                menuFileGetAttatch.Enabled = false;
-            }
+            // メールの選択件が1かつメールボックスのとき
+            var condition = listView1.SelectedItems.Count == 1 && listView1.Columns[0].Text != "名前";
+            menuSaveMailFile.Enabled = condition;
+            menuFileGetAttatch.Enabled = condition;
+            menuFileGetAttatch.Enabled = condition && attachMenuFlag;
 
             // 削除メールが0件の場合
-            if (collectionMail[DELETE].Count == 0) {
-                menuFileClearTrush.Enabled = false;
-            } else {
-                menuFileClearTrush.Enabled = true;
-            }
+            menuFileClearTrush.Enabled = collectionMail[DELETE].Count != 0;
         }
 
         private void menuMail_DropDownOpening(object sender, EventArgs e)
@@ -2558,28 +2521,18 @@ namespace AkaneMail
 
         private void menuListView_Opening(object sender, CancelEventArgs e)
         {
+            // メールの選択件が1かつメールボックスのとき
+            var condition = listView1.Columns[0].Text != "名前" && listView1.SelectedItems.Count == 1;
+            menuReturnMail.Enabled = condition;
+            menuFowerdMail.Enabled = condition;
+            menuGetAttach.Enabled = condition && attachMenuFlag;
+
             // メールの選択数が0またはメールボックスのとき
             if (listView1.SelectedItems.Count == 0 || listView1.Columns[0].Text == "名前") {
-                menuReturnMail.Enabled = false;
                 menuDelete.Enabled = false;
-                menuGetAttach.Enabled = false;
-                menuFowerdMail.Enabled = false;
             } else if (listView1.SelectedItems.Count == 1) {
                 // メールが1件選択されたとき
-                menuReturnMail.Enabled = true;
                 menuDelete.Enabled = true;
-                menuFowerdMail.Enabled = true;
-                // 添付ファイルメニューが開いているとき
-                if (attachMenuFlag == true) {
-                    menuGetAttach.Enabled = true;
-                } else {
-                    menuGetAttach.Enabled = false;
-                }
-            } else {
-                // メールが複数件選択されたとき
-                menuReturnMail.Enabled = false;
-                menuGetAttach.Enabled = false;
-                menuFowerdMail.Enabled = false;
             }
 
             // メールが既読で、メールボックス以外で何かが選択されているとき
@@ -2699,21 +2652,21 @@ namespace AkaneMail
                 // 添付ファイルリストを分割して一覧にする
                 NewMailForm.attachFileNameList = mail.attach.Split(',');
                 // 添付ファイルの数だけメニューを追加する
-                for (int no = 0; no < NewMailForm.attachFileNameList.Length; no++) {
-                    appIcon = System.Drawing.Icon.ExtractAssociatedIcon(NewMailForm.attachFileNameList[no]);
-                    NewMailForm.buttonAttachList.DropDownItems.Add(NewMailForm.attachFileNameList[no], appIcon.ToBitmap());
+                foreach (var attachFile in NewMailForm.attachFileNameList) {
+                    appIcon = System.Drawing.Icon.ExtractAssociatedIcon(attachFile);
+                    NewMailForm.buttonAttachList.DropDownItems.Add(attachFile, appIcon.ToBitmap());
                 }
-            } else if (this.buttonAttachList.Visible == true) {
+            } else if (this.buttonAttachList.Visible) {
                 // 受信メールで添付ファイルがあるとき
                 // 添付リストメニューを表示
                 NewMailForm.buttonAttachList.Visible = true;
                                 
                 // 添付ファイルの数だけメニューを追加する
-                for (int no = 0; no < this.buttonAttachList.DropDownItems.Count; no++) {
+                foreach (var attachFile in this.buttonAttachList.DropDownItems.Cast<ToolStripItem>().Select(i => i.Text)) {
                     // 添付ファイルが存在するかを確認してから添付する
-                    if (File.Exists(Application.StartupPath + @"\tmp\" + this.buttonAttachList.DropDownItems[no].Text)) {
-                        appIcon = System.Drawing.Icon.ExtractAssociatedIcon(Application.StartupPath + @"\tmp\" + this.buttonAttachList.DropDownItems[no].Text);
-                        NewMailForm.buttonAttachList.DropDownItems.Add(Application.StartupPath + @"\tmp\" + this.buttonAttachList.DropDownItems[no].Text, appIcon.ToBitmap());
+                    if (File.Exists(Application.StartupPath + @"\tmp\" + attachFile)) {
+                        appIcon = System.Drawing.Icon.ExtractAssociatedIcon(Application.StartupPath + @"\tmp\" + attachFile);
+                        NewMailForm.buttonAttachList.DropDownItems.Add(Application.StartupPath + @"\tmp\" + attachFile, appIcon.ToBitmap());
                     }
                 }
             }
