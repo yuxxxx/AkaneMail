@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace AkaneMail
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
         // メールを格納する配列
         public List<Mail>[] collectionMail = new List<Mail>[3];
@@ -221,7 +221,7 @@ namespace AkaneMail
             }
         }
 
-        public Form1()
+        public MainForm()
         {
             InitializeComponent();
 
@@ -337,164 +337,164 @@ namespace AkaneMail
             // スレッドのロックをかける
             lock (lockobj) {
                 if (File.Exists(Application.StartupPath + @"\Mail.dat") == true) {
-                    try {
-                        // ファイルストリームをストリームリーダに関連付ける
-                        // StreamReader reader = new StreamReader(stream, Encoding.Default);
+                try {
+                    // ファイルストリームをストリームリーダに関連付ける
+                    // StreamReader reader = new StreamReader(stream, Encoding.Default);
                         using (var reader = new StreamReader(Application.StartupPath + @"\Mail.dat", Encoding.UTF8)) {
-                            // GetHederFieldとHeaderプロパティを使うためPop3クラスを作成する
+                    // GetHederFieldとHeaderプロパティを使うためPop3クラスを作成する
                             using (var pop = new Pop3()) {
 
 
-                                // データを読み出す
-                                for (int i = 0; i < collectionMail.Length; i++) {
+                    // データを読み出す
+                    for (int i = 0; i < collectionMail.Length; i++) {
                                     try {
-                                        // メールの件数を読み出す
-                                        n = Int32.Parse(reader.ReadLine());
-                                    }
+                            // メールの件数を読み出す
+                            n = Int32.Parse(reader.ReadLine());
+                        }
                                     catch (Exception) {
-                                        // エラーフラグをtrueに変更する
-                                        errorFlag = true;
+                            // エラーフラグをtrueに変更する
+                            errorFlag = true;
 
-                                        MessageBox.Show("メール件数とメールデータの数が一致していません。\n件数またはデータレコードをテキストエディタで修正してください。", "Ak@Ne!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                            MessageBox.Show("メール件数とメールデータの数が一致していません。\n件数またはデータレコードをテキストエディタで修正してください。", "Ak@Ne!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
 
-                                        return;
-                                    }
+                            return;
+                        }
 
-                                    // メールを取得する
-                                    for (int j = 0; j < n; j++) {
-                                        // 送信メールのみ必要な項目
-                                        string address = reader.ReadLine();
-                                        string subject = reader.ReadLine();
+                        // メールを取得する
+                        for (int j = 0; j < n; j++) {
+                            // 送信メールのみ必要な項目
+                            string address = reader.ReadLine();
+                            string subject = reader.ReadLine();
 
-                                        // 予期せぬエラーの時にメッセージボックスに表示する件名
-                                        expSubject = subject;
+                            // 予期せぬエラーの時にメッセージボックスに表示する件名
+                            expSubject = subject;
 
-                                        // ヘッダを取得する
-                                        string header = "";
-                                        string hd = reader.ReadLine();
+                            // ヘッダを取得する
+                            string header = "";
+                            string hd = reader.ReadLine();
 
-                                        // 区切り文字が来るまで文字列を連結する
-                                        while (hd != "\x03") {
-                                            header = header + hd + "\r\n";
-                                            hd = reader.ReadLine();
-                                        }
+                            // 区切り文字が来るまで文字列を連結する
+                            while (hd != "\x03") {
+                                header = header + hd + "\r\n";
+                                hd = reader.ReadLine();
+                            }
 
-                                        // ヘッダのサイズが1バイト以上の場合
-                                        if (header.Length > 0) {
-                                            // ヘッダープロパティにファイルから取得したヘッダを格納する
-                                            pop.Header = header;
+                            // ヘッダのサイズが1バイト以上の場合
+                            if (header.Length > 0) {
+                                // ヘッダープロパティにファイルから取得したヘッダを格納する
+                                pop.Header = header;
 
-                                            // アドレスを取得する
-                                            //pop.GetHeaderField("From:");
-                                            pop.GetDecodeHeaderField("From:");
-                                            if (pop.Field != null) {
-                                                address = pop.Field;
-                                            }
+                                // アドレスを取得する
+                                //pop.GetHeaderField("From:");
+                                pop.GetDecodeHeaderField("From:");
+                                if (pop.Field != null) {
+                                    address = pop.Field;
+                                }
 
-                                            // 件名を取得する
-                                            //pop.GetHeaderField("Subject:");
-                                            pop.GetDecodeHeaderField("Subject:");
-                                            if (pop.Field != null) {
-                                                subject = pop.Field;
-                                            }
-                                        }
-
-                                        // 本文を取得する
-                                        string body = "";
-                                        string b = reader.ReadLine();
-
-                                        // エラー文字区切りの時対策
-                                        bool err_parse = false;
-
-                                        // 区切り文字が来るまで文字列を連結する
-                                        while (b != "\x03") {
-                                            // 区切り文字が本文の後ろについてしまったとき
-                                            if (b.Contains("\x03") && b != "\x03") {
-                                                // 区切り文字を取り除く
-                                                err_parse = true;
-                                                b = b.Replace("\x03", "");
-                                            }
-
-                                            body = body + b + "\r\n";
-
-                                            // 区切り文字が検出されたときは区切り文字を取り除いてループから抜ける
-                                            if (err_parse == true) {
-                                                break;
-                                            }
-
-                                            b = reader.ReadLine();
-                                        }
-
-                                        // 受信・送信日時を取得する
-                                        string date = reader.ReadLine();
-
-                                        // メールサイズを取得する(送信メールは0byte扱い)
-                                        string size = reader.ReadLine();
-
-                                        // UIDLを取得する(送信メールは無視)
-                                        string uidl = reader.ReadLine();
-
-                                        // 添付ファイル名を取得する(受信メールは無視)
-                                        string attach = reader.ReadLine();
-
-                                        // 既読・未読フラグを取得する
-                                        bool notReadYet = (reader.ReadLine() == "True");
-
-                                        // CCのアドレスを取得する
-                                        string cc = reader.ReadLine();
-
-                                        // ヘッダが存在するとき
-                                        if (header.Length > 0) {
-                                            // ヘッダープロパティにファイルから取得したヘッダを格納する
-                                            pop.Header = header;
-
-                                            // ヘッダからCCアドレスを取得する
-                                            pop.GetDecodeHeaderField("Cc:");
-
-                                            if (pop.Field != null) {
-                                                cc = pop.Field;
-                                            }
-                                        }
-
-                                        // BCCを取得する(受信メールは無視)
-                                        string bcc = reader.ReadLine();
-
-                                        // 重要度を取得する
-                                        string priority = reader.ReadLine();
-
-                                        // 旧ファイルを読み込んでいるとき
-                                        if (priority != "urgent" && priority != "normal" && priority != "non-urgent") {
-
-                                            // エラーフラグをtrueに変更する
-                                            errorFlag = true;
-
-                                            MessageBox.Show("Version 1.10以下のファイルを読み込もうとしています。\nメールデータ変換ツールで変換してから読み込んでください。", "Ak@Ne!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-
-                                            return;
-                                        }
-
-                                        // ヘッダが存在するとき
-                                        if (header.Length > 0) {
-                                            // ヘッダから重要度を取得する
-                                            priority = Mail.ParsePriority(header);
-                                        }
-
-                                        // 変換フラグを取得する(旧バージョンからのデータ移行)
-                                        string convert = reader.ReadLine();
-
-                                        // メール格納配列に格納する
-                                        Mail mail = new Mail(address, header, subject, body, attach, date, size, uidl, notReadYet, convert, cc, bcc, priority);
-                                        collectionMail[i].Add(mail);
-                                    }
+                                // 件名を取得する
+                                //pop.GetHeaderField("Subject:");
+                                pop.GetDecodeHeaderField("Subject:");
+                                if (pop.Field != null) {
+                                    subject = pop.Field;
                                 }
                             }
+
+                            // 本文を取得する
+                            string body = "";
+                            string b = reader.ReadLine();
+
+                            // エラー文字区切りの時対策
+                            bool err_parse = false;
+
+                            // 区切り文字が来るまで文字列を連結する
+                            while (b != "\x03") {
+                                // 区切り文字が本文の後ろについてしまったとき
+                                if (b.Contains("\x03") && b != "\x03") {
+                                    // 区切り文字を取り除く
+                                    err_parse = true;
+                                    b = b.Replace("\x03", "");
+                                }
+
+                                body = body + b + "\r\n";
+
+                                // 区切り文字が検出されたときは区切り文字を取り除いてループから抜ける
+                                if (err_parse == true) {
+                                    break;
+                                }
+
+                                b = reader.ReadLine();
+                            }
+
+                            // 受信・送信日時を取得する
+                            string date = reader.ReadLine();
+
+                            // メールサイズを取得する(送信メールは0byte扱い)
+                            string size = reader.ReadLine();
+
+                            // UIDLを取得する(送信メールは無視)
+                            string uidl = reader.ReadLine();
+
+                            // 添付ファイル名を取得する(受信メールは無視)
+                            string attach = reader.ReadLine();
+
+                            // 既読・未読フラグを取得する
+                            bool notReadYet = (reader.ReadLine() == "True");
+
+                            // CCのアドレスを取得する
+                            string cc = reader.ReadLine();
+
+                            // ヘッダが存在するとき
+                                        if (header.Length > 0) {
+                                // ヘッダープロパティにファイルから取得したヘッダを格納する
+                                pop.Header = header;
+
+                                // ヘッダからCCアドレスを取得する
+                                pop.GetDecodeHeaderField("Cc:");
+
+                                            if (pop.Field != null) {
+                                    cc = pop.Field;
+                                }
+                            }
+
+                            // BCCを取得する(受信メールは無視)
+                            string bcc = reader.ReadLine();
+
+                            // 重要度を取得する
+                            string priority = reader.ReadLine();
+
+                            // 旧ファイルを読み込んでいるとき
+                                        if (priority != "urgent" && priority != "normal" && priority != "non-urgent") {
+
+                                // エラーフラグをtrueに変更する
+                                errorFlag = true;
+
+                                MessageBox.Show("Version 1.10以下のファイルを読み込もうとしています。\nメールデータ変換ツールで変換してから読み込んでください。", "Ak@Ne!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+
+                                return;
+                            }
+
+                            // ヘッダが存在するとき
+                                        if (header.Length > 0) {
+                                // ヘッダから重要度を取得する
+                                priority = Mail.ParsePriority(header);
+                            }
+
+                            // 変換フラグを取得する(旧バージョンからのデータ移行)
+                            string convert = reader.ReadLine();
+
+                            // メール格納配列に格納する
+                            Mail mail = new Mail(address, header, subject, body, attach, date, size, uidl, notReadYet, convert, cc, bcc, priority);
+                            collectionMail[i].Add(mail);
                         }
                     }
-                    catch (Exception exp) {
-                        MessageBox.Show("予期しないエラーが発生しました。\n" + "件名:" + expSubject + "\n" + "エラー詳細 : \n" + exp.Message, "Ak@Ne!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                }
+                        }
                     }
+                catch (Exception exp) {
+                    MessageBox.Show("予期しないエラーが発生しました。\n" + "件名:" + expSubject + "\n" + "エラー詳細 : \n" + exp.Message, "Ak@Ne!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                 }
             }
+        }
         }
 
         /// <summary>
@@ -503,36 +503,36 @@ namespace AkaneMail
         private void MailDataSave()
         {
             lock (lockobj) {
-                try {
-                    // ファイルストリームをストリームライタに関連付ける
-                    using (var writer = new StreamWriter(Application.StartupPath + @"\Mail.dat", false, Encoding.UTF8)) {
-                        // メールの件数とデータを書き込む
-                        foreach (var mails in collectionMail) {
-                            writer.WriteLine(mails.Count);
-                            foreach (var mail in mails) {
-                                writer.WriteLine(mail.address);
-                                writer.WriteLine(mail.subject);
-                                writer.Write(mail.header);
-                                writer.WriteLine("\x03");
-                                writer.Write(mail.body);
-                                writer.WriteLine("\x03");
-                                writer.WriteLine(mail.date);
-                                writer.WriteLine(mail.size);
-                                writer.WriteLine(mail.uidl);
-                                writer.WriteLine(mail.attach);
-                                writer.WriteLine(mail.notReadYet.ToString());
-                                writer.WriteLine(mail.cc);
-                                writer.WriteLine(mail.bcc);
-                                writer.WriteLine(mail.priority);
-                                writer.WriteLine(mail.convert);
-                            }
+            try {
+                // ファイルストリームをストリームライタに関連付ける
+                using (var writer = new StreamWriter(Application.StartupPath + @"\Mail.dat", false, Encoding.UTF8)) {
+                // メールの件数とデータを書き込む
+                    foreach (var mails in collectionMail) {
+                        writer.WriteLine(mails.Count);
+                        foreach (var mail in mails) {
+                            writer.WriteLine(mail.address);
+                            writer.WriteLine(mail.subject);
+                            writer.Write(mail.header);
+                            writer.WriteLine("\x03");
+                            writer.Write(mail.body);
+                            writer.WriteLine("\x03");
+                            writer.WriteLine(mail.date);
+                            writer.WriteLine(mail.size);
+                            writer.WriteLine(mail.uidl);
+                            writer.WriteLine(mail.attach);
+                            writer.WriteLine(mail.notReadYet.ToString());
+                            writer.WriteLine(mail.cc);
+                            writer.WriteLine(mail.bcc);
+                            writer.WriteLine(mail.priority);
+                            writer.WriteLine(mail.convert);
                         }
                     }
                 }
-                catch (Exception exp) {
-                    MessageBox.Show("予期しないエラーが発生しました。\n" + exp.Message, "Ak@Ne!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                }
             }
+            catch (Exception exp) {
+                MessageBox.Show("予期しないエラーが発生しました。\n" + exp.Message, "Ak@Ne!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+            }
+        }
         }
 
         /// <summary>
@@ -601,7 +601,7 @@ namespace AkaneMail
             // フラグの値が0のとき
             if (flag == 0) {
                 // IEコンポが表示されていないとき
-                if (this.browserBody.Visible == false) {
+                if (!this.browserBody.Visible) {
                     // テキストボックスを空値にする
                     this.textBody.Text = "";
                 }
@@ -662,25 +662,25 @@ namespace AkaneMail
                 labelMessage.Text = "メール受信中";
 
                 // POP3のセッションを作成する
-                using (var pop = new nMail.Pop3()) {
-                    // POP3への接続タイムアウト設定をする
-                    Options.EnableConnectTimeout();
+                using (var pop = new nMail.Pop3()){
+                // POP3への接続タイムアウト設定をする
+                Options.EnableConnectTimeout();
 
-                    // APOPを使用するときに使うフラグ
-                    pop.APop = Mail.apopFlag;
+                // APOPを使用するときに使うフラグ
+                pop.APop = Mail.apopFlag;
 
-                    // POP3 over SSL/TLSフラグが有効のときはSSLを使用する
-                    if (Mail.popOverSSL) {
+                // POP3 over SSL/TLSフラグが有効のときはSSLを使用する
+                    if(Mail.popOverSSL){
                         pop.SSL = nMail.Pop3.SSL3;
-                        pop.Connect(Mail.popServer, nMail.Pop3.StandardSslPortNo);
-                    }
-                    else {
-                        // POP3へ接続する
                         pop.Connect(Mail.popServer, Mail.popPortNumber);
                     }
+                    else{
+                    // POP3へ接続する
+                    pop.Connect(Mail.popServer, Mail.popPortNumber);
+                }
 
-                    // POP3への認証処理を行う
-                    pop.Authenticate(Mail.userName, Mail.passWord);
+                // POP3への認証処理を行う
+                pop.Authenticate(Mail.userName, Mail.passWord);
 
 
                     // 未受信のメールが何件あるかチェックする
@@ -697,74 +697,74 @@ namespace AkaneMail
 
                     // POP3サーバ上に1件以上のメールが存在するとき
                     if (pop.Count > 0) {
-                        // ステータスバーに状況表示する
-                        labelMessage.Text = pop.Count + "件のメッセージがサーバ上にあります。";
+                    // ステータスバーに状況表示する
+                    labelMessage.Text = pop.Count + "件のメッセージがサーバ上にあります。";
                     }
-                    else {
-                        // ステータスバーに状況表示する
-                        labelMessage.Text = "新着のメッセージはありませんでした。";
+                    else{
+                    // ステータスバーに状況表示する
+                    labelMessage.Text = "新着のメッセージはありませんでした。";
 
-                        // メール受信のメニューとツールボタンを有効化する
-                        Invoke(enableButton, 0);
-
-                        return;
-                    }
+                    // メール受信のメニューとツールボタンを有効化する
+                    Invoke(enableButton, 0);
+                    return;
+                }
 
                     var receivedCount = countMail.Result;
-                    // 受信済みメールカウントがPOP3サーバ上にあるメール件数と同じとき
+                // 受信済みメールカウントがPOP3サーバ上にあるメール件数と同じとき
                     if (receivedCount == pop.Count) {
-                        // ステータスバーに状況表示する
-                        labelMessage.Text = "新着のメッセージはありませんでした。";
+                    // ステータスバーに状況表示する
+                    labelMessage.Text = "新着のメッセージはありませんでした。";
 
-                        // プログレスバーを非表示に戻す
-                        Invoke(new ProgressMailDisableDlg(ProgressMailDisable));
+                    // プログレスバーを非表示に戻す
+                    Invoke(new ProgressMailDisableDlg(ProgressMailDisable));
 
-                        // メール受信のメニューとツールボタンを有効化する
-                        Invoke(enableButton, 0);
+                    // メール受信のメニューとツールボタンを有効化する
+                    Invoke(enableButton, 0);
 
-                        return;
-                    }
-
-                    // プログレスバーを表示して最大値を未受信メール件数に設定する
-                    int mailCountMax = pop.Count - receivedCount;
-                    Invoke(progressMailInit, mailCountMax);
-
-                    // 未受信のメールを取得するためカウントを1増加させる
-                    receivedCount++;
-
-                    // 取得したメールをコレクションに追加する
-                    for (int no = receivedCount; no <= pop.Count; no++) {
-                        // 受信中件数を表示
-                        labelMessage.Text = no + "件目のメールを受信しています。";
-
-                        // メールのUIDLを取得する
-                        pop.GetUidl(no);
-
-                        // HTML/Base64のデコードを無効にする
-                        Options.DisableDecodeBodyText();
-
-                        // メールの情報を取得する
-                        pop.GetMail(no);
-
-                        // メールの情報を格納する
-                        Mail mail = new Mail(pop.From, pop.Header, pop.Subject, pop.Body, pop.FileName, pop.DateString, pop.Size.ToString(), pop.Uidl, true, "", pop.GetDecodeHeaderField("Cc:"), "", Mail.ParsePriority(pop.Header));
-                        collectionMail[RECEIVE].Add(mail);
-
-                        // 受信メールの数を増加する
-                        mailCount++;
-
-                        // メール受信時にPOP3サーバ上のメール削除のチェックがある時はPOP3サーバからメールを削除する
-                        if (Mail.deleteMail) {
-                            pop.Delete(no);
-                        }
-
-                        // メールの受信件数を更新する
-                        Invoke(progressMailUpdate, mailCount);
-
-                        // スレッドを1秒間待機させる
-                        System.Threading.Thread.Sleep(1000);
-                    }
+                    return;
                 }
+
+                // プログレスバーを表示して最大値を未受信メール件数に設定する
+                int mailCountMax = pop.Count - receivedCount;
+                Invoke(progressMailInit, mailCountMax);
+
+                // 未受信のメールを取得するためカウントを1増加させる
+                receivedCount++;
+
+                // 取得したメールをコレクションに追加する
+                    for(int no = receivedCount; no <= pop.Count; no++){
+                    // 受信中件数を表示
+                    labelMessage.Text = no + "件目のメールを受信しています。";
+
+                    // メールのUIDLを取得する
+                    pop.GetUidl(no);
+
+                    // HTML/Base64のデコードを無効にする
+                    Options.DisableDecodeBodyText();
+
+                    // メールの情報を取得する
+                    pop.GetMail(no);
+
+                    // メールの情報を格納する
+                    Mail mail = new Mail(pop.From, pop.Header, pop.Subject, pop.Body, pop.FileName, pop.DateString, pop.Size.ToString(), pop.Uidl, true, "", pop.GetDecodeHeaderField("Cc:"), "", Mail.ParsePriority(pop.Header));
+                    collectionMail[RECEIVE].Add(mail);
+
+                    // 受信メールの数を増加する
+                    mailCount++;
+
+                    // メール受信時にPOP3サーバ上のメール削除のチェックがある時はPOP3サーバからメールを削除する
+                        if(Mail.deleteMail){
+                        pop.Delete(no);
+                    }
+
+                    // メールの受信件数を更新する
+                    Invoke(progressMailUpdate, mailCount);
+
+                    // スレッドを1秒間待機させる
+                    System.Threading.Thread.Sleep(1000);
+                }
+                }
+
                 // プログレスバーを非表示に戻す
                 Invoke(new ProgressMailDisableDlg(ProgressMailDisable));
 
@@ -772,21 +772,21 @@ namespace AkaneMail
                 Invoke(enableButton, 0);
 
                 // 未受信メールが1件以上の場合
-                if (mailCount >= 1) {
+                if(mailCount >= 1){
                     // メール着信音の設定をしている場合
-                    if (Mail.popSoundFlag == true && Mail.popSoundName != "") {
+                    if(Mail.popSoundFlag == true && Mail.popSoundName != ""){
                         SoundPlayer sndPlay = new SoundPlayer(Mail.popSoundName);
                         sndPlay.Play();
                     }
 
                     // ウィンドウが最小化でタスクトレイに格納されていて何分間隔かで受信をするとき
-                    if (this.WindowState == FormWindowState.Minimized && Mail.minimizeTaskTray == true && Mail.autoMailFlag == true) {
+                    if(this.WindowState == FormWindowState.Minimized && Mail.minimizeTaskTray == true && Mail.autoMailFlag == true){
                         notifyIcon1.BalloonTipIcon = ToolTipIcon.Info;
                         notifyIcon1.BalloonTipTitle = "新着メール";
                         notifyIcon1.BalloonTipText = mailCount + "件の新着メールを受信しました。";
                         notifyIcon1.ShowBalloonTip(300);
                     }
-                    else {
+                    else{
                         // 画面をフラッシュさせる
                         Invoke(flashWindow);
 
@@ -797,7 +797,7 @@ namespace AkaneMail
                     // データ変更フラグをtrueにする
                     dataDirtyFlag = true;
                 }
-                else {
+                else{
                     // ステータスバーに状況表示する
                     labelMessage.Text = "新着のメッセージはありませんでした。";
 
@@ -848,7 +848,7 @@ namespace AkaneMail
             max_no = collectionMail[SEND].Count(m => m.notReadYet);
 
             // 送信可能なメールが存在しないとき
-            if (max_no == 0) {
+            if(max_no == 0){
                 // メール送信・受信のメニューとツールボタンを有効化する
                 Invoke(enableButton, 1);
                 return;
@@ -866,25 +866,25 @@ namespace AkaneMail
                     try {
                         // POP3のセッションを作成する
                         using (var pop = new nMail.Pop3()) {
-                            // POP3への接続タイムアウト設定をする
-                            Options.EnableConnectTimeout();
+                        // POP3への接続タイムアウト設定をする
+                        Options.EnableConnectTimeout();
 
-                            // APOPを使用するときに使うフラグ
-                            pop.APop = Mail.apopFlag;
+                        // APOPを使用するときに使うフラグ
+                        pop.APop = Mail.apopFlag;
 
-                            // POP3 over SSL/TLSフラグが有効のときはSSLを使用する
+                        // POP3 over SSL/TLSフラグが有効のときはSSLを使用する
                             if (Mail.popOverSSL) {
                                 pop.SSL = nMail.Pop3.SSL3;
-                                pop.Connect(Mail.popServer, nMail.Pop3.StandardSslPortNo);
-                            }
-                            else {
-                                // POP3へ接続する
                                 pop.Connect(Mail.popServer, Mail.popPortNumber);
                             }
-
-                            // POP3への認証処理を行う
-                            pop.Authenticate(Mail.userName, Mail.passWord);
+                            else {
+                            // POP3へ接続する
+                            pop.Connect(Mail.popServer, Mail.popPortNumber);
                         }
+
+                        // POP3への認証処理を行う
+                        pop.Authenticate(Mail.userName, Mail.passWord);
+                    }
                     }
                     catch (nMail.nMailException nex) {
                         // ステータスバーに状況表示する
@@ -910,55 +910,56 @@ namespace AkaneMail
                 using (var smtp = new nMail.Smtp(Mail.smtpServer)) {
                     smtp.Port = Mail.smtpPortNumber;
 
-                    // SMTP認証フラグが有効の時はSMTP認証を行う
-                    if (Mail.smtpAuth == true) {
-                        // SMTPサーバに接続
-                        smtp.Connect();
-                        // SMTP認証を行う
-                        smtp.Authenticate(Mail.userName, Mail.passWord, Smtp.AuthPlain | Smtp.AuthCramMd5);
+                // SMTP認証フラグが有効の時はSMTP認証を行う
+                    if (Mail.smtpAuth) {
+                    // SMTPサーバに接続
+                    smtp.Connect();
+                        
+                    // SMTP認証を行う
+                    smtp.Authenticate(Mail.userName, Mail.passWord, Smtp.AuthPlain | Smtp.AuthCramMd5);
                     }
 
                     foreach (Mail mail in collectionMail[SEND]) {
-                        if (mail.notReadYet == true) {
-                            // CCが存在するとき
-                            if (mail.cc != "") {
-                                // CCの宛先を設定する
-                                smtp.Cc = mail.cc;
-                            }
-
-                            // BCCが存在するとき
-                            if (mail.bcc != "") {
-                                // BCCの宛先を設定する
-                                smtp.Bcc = mail.bcc;
-                            }
-
-                            // 添付ファイルを指定している場合
-                            if (mail.attach != "") {
-                                smtp.FileName = mail.attach;
-                            }
-
-                            // 追加ヘッダをつける
-                            smtp.Header = "\r\nPriority: " + mail.priority + "\r\nX-Mailer: Akane Mail Version " + Application.ProductVersion;
-
-                            // 差出人のアドレスを編集する
-                            string fromAddress = Mail.FromAddress;
-
-                            // 送信する
-                            smtp.SendMail(mail.address, fromAddress, mail.subject, mail.body);
-
-                            // 送信日時を設定する
-                            mail.date = DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString();
-
-                            // 送信済みに変更する
-                            mail.notReadYet = false;
-
-                            // メールの送信件数を更新する
-                            send_no++;
-                            Invoke(progressMailUpdate, send_no);
-
-                            // スレッドを1秒間待機させる
-                            System.Threading.Thread.Sleep(1000);
+                        if (mail.notReadYet) {
+                        // CCが存在するとき
+                            if(mail.cc != ""){
+                            // CCの宛先を設定する
+                            smtp.Cc = mail.cc;
                         }
+
+                        // BCCが存在するとき
+                            if(mail.bcc != ""){
+                            // BCCの宛先を設定する
+                            smtp.Bcc = mail.bcc;
+                        }
+
+                        // 添付ファイルを指定している場合
+                            if(mail.attach != ""){
+                            smtp.FileName = mail.attach;
+                        }
+
+                        // 追加ヘッダをつける
+                        smtp.Header = "\r\nPriority: " + mail.priority + "\r\nX-Mailer: Akane Mail Version " + Application.ProductVersion;
+
+                        // 差出人のアドレスを編集する
+                        string fromAddress = Mail.FromAddress;
+
+                        // 送信する
+                        smtp.SendMail(mail.address, fromAddress, mail.subject, mail.body);
+
+                        // 送信日時を設定する
+                        mail.date = DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString();
+
+                        // 送信済みに変更する
+                        mail.notReadYet = false;
+
+                        // メールの送信件数を更新する
+                        send_no++;
+                        Invoke(progressMailUpdate, send_no);
+
+                        // スレッドを1秒間待機させる
+                        System.Threading.Thread.Sleep(1000);
+                    }
                     }
                 }
 
@@ -1017,24 +1018,23 @@ namespace AkaneMail
                     try {
                         // POP3のセッションを作成する
                         using (var pop = new Pop3()) {
-                            // POP3への接続タイムアウト設定をする
-                            Options.EnableConnectTimeout();
+                        // POP3への接続タイムアウト設定をする
+                        Options.EnableConnectTimeout();
 
-                            // APOPを使用するときに使うフラグ
-                            pop.APop = Mail.apopFlag;
+                        // APOPを使用するときに使うフラグ
+                        pop.APop = Mail.apopFlag;
 
-                            // POP3 over SSL/TLSフラグが有効のときはSSLを使用する
+                        // POP3 over SSL/TLSフラグが有効のときはSSLを使用する
                             if (Mail.popOverSSL) {
-                                pop.SSL = Pop3.SSL3;
-                                pop.Connect(Mail.popServer, Pop3.StandardSslPortNo);
-                            }
-                            else {
-                                // POP3へ接続する
-                                pop.Connect(Mail.popServer, Mail.popPortNumber);
-                            }
+                            pop.SSL = Pop3.SSL3;
+                            pop.Connect(Mail.popServer, Mail.popPortNumber);
+                        }else{
+                            // POP3へ接続する
+                            pop.Connect(Mail.popServer, Mail.popPortNumber);
+                        }
 
-                            // POP3への認証処理を行う
-                            pop.Authenticate(Mail.userName, Mail.passWord);
+                        // POP3への認証処理を行う
+                        pop.Authenticate(Mail.userName, Mail.passWord);
                         }
                     }
                     catch (nMail.nMailException nex) {
@@ -1050,43 +1050,43 @@ namespace AkaneMail
 
                 // SMTPのセッションを作成する
                 using (var smtp = new Smtp(Mail.smtpServer)) {
-                    smtp.Port = Mail.smtpPortNumber;
+                smtp.Port = Mail.smtpPortNumber;
 
-                    // SMTP認証フラグが有効の時はSMTP認証を行う
+                // SMTP認証フラグが有効の時はSMTP認証を行う
                     if (Mail.smtpAuth) {
-                        // SMTPサーバに接続
-                        smtp.Connect();
-                        // SMTP認証を行う
-                        smtp.Authenticate(Mail.userName, Mail.passWord, Smtp.AuthPlain | Smtp.AuthCramMd5);
-                    }
-
-                    // CCが存在するとき
-                    if (cc != "") {
-                        // CCの宛先を設定する
-                        smtp.Cc = cc;
-                    }
-
-                    // BCCが存在するとき
-                    if (bcc != "") {
-                        // BCCの宛先を設定する
-                        smtp.Bcc = bcc;
-                    }
-
-                    // 添付ファイルを指定している場合
-                    if (attach != "") {
-                        smtp.FileName = attach;
-                    }
-
-                    // 追加ヘッダをつける
-                    smtp.Header = "\r\nPriority: " + priority + "\r\nX-Mailer: Akane Mail Version " + Application.ProductVersion;
-
-                    // 差出人のアドレスを編集する
-                    string fromAddress = Mail.FromAddress;
-
-                    // 送信する
-                    smtp.SendMail(address, fromAddress, subject, body);
+                    // SMTPサーバに接続
+                    smtp.Connect();
+                    // SMTP認証を行う
+                    smtp.Authenticate(Mail.userName, Mail.passWord, Smtp.AuthPlain | Smtp.AuthCramMd5);
                 }
 
+                // CCが存在するとき
+                    if (cc != "") {
+                    // CCの宛先を設定する
+                    smtp.Cc = cc;
+                }
+
+                // BCCが存在するとき
+                    if (bcc != "") {
+                    // BCCの宛先を設定する
+                    smtp.Bcc = bcc;
+                }
+
+                // 添付ファイルを指定している場合
+                    if (attach != "") {
+                    smtp.FileName = attach;
+                }
+
+                // 追加ヘッダをつける
+                smtp.Header = "\r\nPriority: " + priority + "\r\nX-Mailer: Akane Mail Version " + Application.ProductVersion;
+
+                // 差出人のアドレスを編集する
+                string fromAddress = Mail.FromAddress;
+
+                // 送信する
+                smtp.SendMail(address, fromAddress, subject, body);
+                }
+                
                 // ステータスバーに状況表示する
                 labelMessage.Text = "メール送信完了";
             }
@@ -1149,11 +1149,11 @@ namespace AkaneMail
         private void ClearInput()
         {
             // IEコンポが表示されていないとき
-            if (!this.browserBody.Visible) {
+            if(!this.browserBody.Visible){
                 // テキストボックスを空値にする
                 this.textBody.Text = "";
             }
-            else {
+            else{
                 // IEコンポを閉じてテキストボックスを表示させる
                 this.browserBody.Visible = false;
                 this.textBody.Text = "";
@@ -1161,7 +1161,7 @@ namespace AkaneMail
             }
 
             // 添付リストが表示されているとき
-            if (buttonAttachList.Visible) {
+            if(buttonAttachList.Visible){
                 buttonAttachList.DropDownItems.Clear();
                 buttonAttachList.Visible = false;
             }
@@ -1249,12 +1249,12 @@ namespace AkaneMail
 
         private void menuToolSetEnv_Click(object sender, EventArgs e)
         {
-            Form2 Form2 = new Form2();
+            SettingForm Form2 = new SettingForm();
 
             if (timer2.Enabled == true) {
                 timer2.Enabled = false;
             }
-
+            
             DialogResult ret = Form2.ShowDialog();
 
             if (ret == DialogResult.OK) {
@@ -1284,7 +1284,7 @@ namespace AkaneMail
 
         private void menuMailNew_Click(object sender, EventArgs e)
         {
-            Form3 NewMailForm = new Form3();
+            MailEditorForm NewMailForm = new MailEditorForm();
 
             // 親フォームをForm1に設定する
             NewMailForm.MainForm = this;
@@ -1421,7 +1421,7 @@ namespace AkaneMail
                         }
                         nLen--;
                     }
-                }
+            }
             }
 
             ClearInput();
@@ -1438,7 +1438,7 @@ namespace AkaneMail
                 else {
                     isListEmpty = true;
                 }
-            }
+                }
             else {
                 // 選択しているリスト位置が0でないとき
                 if (nSel != 0)
@@ -1581,7 +1581,7 @@ namespace AkaneMail
             }
             else if (listView1.Columns[0].Text == "宛先") {
                 // 1番目のカラムが宛先のときは編集画面を表示する
-                Form3 EditMailForm = new Form3();
+                MailEditorForm EditMailForm = new MailEditorForm();
 
                 // 親フォームをForm1に設定する
                 EditMailForm.MainForm = this;
@@ -1619,12 +1619,12 @@ namespace AkaneMail
                     // 添付ファイルリストを分割して一覧にする
                     EditMailForm.attachFileNameList = mail.attach.Split(',');
                     // 添付ファイルの数だけメニューを追加する
-                    foreach (var attachFile in EditMailForm.attachFileNameList) {
-                        if (File.Exists(attachFile)) {
+                    foreach(var attachFile in EditMailForm.attachFileNameList){
+                        if(File.Exists(attachFile)){
                             appIcon = System.Drawing.Icon.ExtractAssociatedIcon(attachFile);
                             EditMailForm.buttonAttachList.DropDownItems.Add(attachFile, appIcon.ToBitmap());
                         }
-                        else {
+                        else{
                             EditMailForm.buttonAttachList.DropDownItems.Add(attachFile + "は削除されています。");
                         }
                     }
@@ -1666,6 +1666,7 @@ namespace AkaneMail
             initMail.m_fromName = Mail.fromName;
             initMail.m_mailAddress = Mail.mailAddress;
             initMail.m_userName = Mail.userName;
+            
             // パスワードの暗号化を行う
             try {
                 initMail.m_passWord = ACrypt.EncryptPasswordString(Mail.passWord);
@@ -1674,6 +1675,7 @@ namespace AkaneMail
                 // 例外発生時は旧バージョンと同じ動作
                 initMail.m_passWord = Mail.passWord;
             }
+
             initMail.m_smtpServer = Mail.smtpServer;
             initMail.m_popServer = Mail.popServer;
             initMail.m_smtpPortNo = Mail.smtpPortNumber;
@@ -1697,7 +1699,7 @@ namespace AkaneMail
 
             System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(initClass));
             using (var fs = new FileStream(Application.StartupPath + @"\AkaneMail.xml", FileMode.Create)) {
-                serializer.Serialize(fs, initMail);
+            serializer.Serialize(fs, initMail);
             }
         }
 
@@ -1748,7 +1750,7 @@ namespace AkaneMail
             if (File.Exists(Application.StartupPath + @"\AkaneMail.xml")) {
                 System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(initClass));
                 using (var fs = new FileStream(Application.StartupPath + @"\AkaneMail.xml", FileMode.Open)) {
-                    initMail = (initClass)serializer.Deserialize(fs);
+                initMail = (initClass)serializer.Deserialize(fs);
                 }
                 Mail.fromName = initMail.m_fromName;
                 Mail.mailAddress = initMail.m_mailAddress;
@@ -1854,7 +1856,7 @@ namespace AkaneMail
             // スプラッシュ・スクリーンの表示終了
             splash.Close();
             if (!splash.IsDisposed)
-                splash.Dispose();
+            splash.Dispose();
 
             // 一時的に非表示にした画面を表示させる
             this.Show();
@@ -1878,7 +1880,7 @@ namespace AkaneMail
         private void menuMailReturnMail_Click(object sender, EventArgs e)
         {
             Mail mail = null;
-            Form3 NewMailForm = new Form3();
+            MailEditorForm NewMailForm = new MailEditorForm();
             ListViewItem item = listView1.SelectedItems[0];
 
             // 選択アイテムが0のときは反応にしない
@@ -2008,11 +2010,11 @@ namespace AkaneMail
                         // 本文にHTMLタグが直書きされているタイプのHTMLメールのとき
                         // 展開したHTMLファイルをストリーム読み込みしてテキストを返信用の変数に格納する
                         using (var sr = new StreamReader(Application.StartupPath + @"\tmp\" + attach.HtmlFile, Encoding.Default)) {
-                            string htmlBody = sr.ReadToEnd();
+                        string htmlBody = sr.ReadToEnd();
 
-                            // HTMLからタグを取り除いた本文を返信文に格納する
-                            attachMailBody = Mail.HtmlToText(htmlBody, mail.header);
-                        }
+                        // HTMLからタグを取り除いた本文を返信文に格納する
+                        attachMailBody = Mail.HtmlToText(htmlBody, mail.header);
+                    }
                     }
 
                     // 添付ファイル保存フォルダに展開されたHTMLファイルをWebBrowserで表示する
@@ -2028,14 +2030,14 @@ namespace AkaneMail
                         // 本文にHTMLタグが直書きされているタイプのHTMLメールのとき
                         // 展開したHTMLファイルをストリーム読み込みしてテキストボックスに表示する
                         using (var sr = new StreamReader(Application.StartupPath + @"\tmp\" + attach.HtmlFile, Encoding.Default)) {
-                            string htmlBody = sr.ReadToEnd();
+                        string htmlBody = sr.ReadToEnd();
 
-                            // HTMLからタグを取り除く
-                            htmlBody = Mail.HtmlToText(htmlBody, mail.header);
+                        // HTMLからタグを取り除く
+                        htmlBody = Mail.HtmlToText(htmlBody, mail.header);
 
-                            attachMailBody = htmlBody;
-                            this.textBody.Text = htmlBody;
-                        }
+                        attachMailBody = htmlBody;
+                        this.textBody.Text = htmlBody;
+                    }
                     }
                     else if (attach.Body != "") {
                         // デコードした本文の行末が\n\nではないとき
@@ -2194,16 +2196,16 @@ namespace AkaneMail
                     // 添付ファイル展開用のテンポラリファイルを作成する
                     string tmpFileName = Path.GetTempFileName();
                     using (var writer = new StreamWriter(tmpFileName)) {
-                        writer.Write(mail.header);
-                        writer.Write("\r\n");
-                        writer.Write(mail.body);
+                    writer.Write(mail.header);
+                    writer.Write("\r\n");
+                    writer.Write(mail.body);
                     }
 
                     // テンポラリファイルを開いて添付ファイルを開く
                     using (var reader = new StreamReader(tmpFileName)) {
-                        string header = reader.ReadToEnd();
-                        // ヘッダと本文付きの文字列を添付クラスに追加する
-                        attach.Add(header);
+                    string header = reader.ReadToEnd();
+                    // ヘッダと本文付きの文字列を添付クラスに追加する
+                    attach.Add(header);
                     }
                     // 添付ファイルを保存する
                     attach.Save();
@@ -2259,7 +2261,7 @@ namespace AkaneMail
                     try {
                         // ヘッダから文字コードを取得する(添付付きは取得できない)
                         string enc = Mail.ParseEncoding(mail.header);
-
+                        
                         // 出力する文字コードがUTF-8ではないとき
                         if (enc.ToLower().Contains("iso-") || enc.ToLower().Contains("shift_") || enc.ToLower().Contains("euc") || enc.ToLower().Contains("windows")) {
                             // 出力するヘッダをUTF-8から各文字コードに変換する
@@ -2306,18 +2308,18 @@ namespace AkaneMail
                         Encoding writeEnc = Encoding.GetEncoding(enc);
 
                         using (var writer = new StreamWriter(saveFileDialog1.FileName, false, writeEnc)) {
-                            // 受信メール(ヘッダが存在する)のとき
+                        // 受信メール(ヘッダが存在する)のとき
                             if (mail.header.Length > 0) {
-                                writer.Write(fileHeader);
-                                writer.Write("\r\n");
-                            }
+                            writer.Write(fileHeader);
+                            writer.Write("\r\n");
+                        }
                             else {
-                                // 送信メールのときはヘッダの代わりに送り先と件名を出力
-                                writer.WriteLine("To: " + mail.address);
-                                writer.WriteLine("Subject: " + mail.subject);
-                                writer.Write("\r\n");
-                            }
-                            writer.Write(fileBody);
+                            // 送信メールのときはヘッダの代わりに送り先と件名を出力
+                            writer.WriteLine("To: " + mail.address);
+                            writer.WriteLine("Subject: " + mail.subject);
+                            writer.Write("\r\n");
+                        }
+                        writer.Write(fileBody);
                         }
                     }
                     catch (Exception ex) {
@@ -2343,7 +2345,7 @@ namespace AkaneMail
         private void menuHelpAbout_Click(object sender, EventArgs e)
         {
             // バージョン情報を表示する
-            Form4 AboutForm = new Form4();
+            AboutForm AboutForm = new AboutForm();
             AboutForm.ShowDialog();
         }
 
@@ -2506,7 +2508,7 @@ namespace AkaneMail
 
             Icon appIcon;
             Mail mail = null;
-            Form3 NewMailForm = new Form3();
+            MailEditorForm NewMailForm = new MailEditorForm();
             ListViewItem item = listView1.SelectedItems[0];
 
             // 選択アイテムが0のときは反応にしない
@@ -2580,12 +2582,12 @@ namespace AkaneMail
                     appIcon = System.Drawing.Icon.ExtractAssociatedIcon(attachFile);
                     NewMailForm.buttonAttachList.DropDownItems.Add(attachFile, appIcon.ToBitmap());
                 }
-            }
+                }
             else if (this.buttonAttachList.Visible) {
                 // 受信メールで添付ファイルがあるとき
                 // 添付リストメニューを表示
                 NewMailForm.buttonAttachList.Visible = true;
-
+                                
                 // 添付ファイルの数だけメニューを追加する
                 foreach (var attachFile in this.buttonAttachList.DropDownItems.Cast<ToolStripItem>().Select(i => i.Text)) {
                     // 添付ファイルが存在するかを確認してから添付する

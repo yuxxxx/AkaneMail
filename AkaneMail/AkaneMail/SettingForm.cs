@@ -8,12 +8,12 @@ using System.Windows.Forms;
 
 namespace AkaneMail
 {
-    public partial class Form2 : Form
+    public partial class SettingForm : Form
     {
         // フォーム表示フラグ
         public bool loadFromFlag = false;
 
-        public Form2()
+        public SettingForm()
         {
             InitializeComponent();
         }
@@ -90,7 +90,7 @@ namespace AkaneMail
 
                 textSoundFileName.Enabled = checkSoundPlay.Checked;
                 buttonBrowse.Enabled = checkSoundPlay.Checked;
-                }
+            }
             // フォーム読み込み完了
             loadFromFlag = false;
         }
