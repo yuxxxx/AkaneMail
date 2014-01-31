@@ -335,162 +335,146 @@ namespace AkaneMail
             int n = 0;
 
             // スレッドのロックをかける
-            lock(lockobj) {
-                if(File.Exists(Application.StartupPath + @"\Mail.dat")) {
-                try {
-                    // ファイルストリームをストリームリーダに関連付ける
-                    // StreamReader reader = new StreamReader(stream, Encoding.Default);
-                        using(var reader = new StreamReader(Application.StartupPath + @"\Mail.dat", Encoding.UTF8)) {
-                    // GetHederFieldとHeaderプロパティを使うためPop3クラスを作成する
-                            using(var pop = new Pop3()) {
-
-
-                    // データを読み出す
-                                for(int i = 0; i < collectionMail.Length; i++) {
+            lock (lockobj) {
+                if (File.Exists(Application.StartupPath + @"\Mail.dat")) {
+                    try {
+                        // ファイルストリームをストリームリーダに関連付ける
+                        // StreamReader reader = new StreamReader(stream, Encoding.Default);
+                        using (var reader = new StreamReader(Application.StartupPath + @"\Mail.dat", Encoding.UTF8)) {
+                            // GetHederFieldとHeaderプロパティを使うためPop3クラスを作成する
+                            using (var pop = new Pop3()) {
+                                // データを読み出す
+                                foreach (var mailList in collectionMail) {
                                     try {
-                            // メールの件数を読み出す
-                            n = Int32.Parse(reader.ReadLine());
-                        }
-                                    catch(Exception) {
-                            // エラーフラグをtrueに変更する
-                            errorFlag = true;
+                                        // メールの件数を読み出す
+                                        n = Int32.Parse(reader.ReadLine());
+                                    }
+                                    catch (Exception) {
+                                        // エラーフラグをtrueに変更する
+                                        errorFlag = true;
 
-                            MessageBox.Show("メール件数とメールデータの数が一致していません。\n件数またはデータレコードをテキストエディタで修正してください。", "Ak@Ne!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                                        MessageBox.Show("メール件数とメールデータの数が一致していません。\n件数またはデータレコードをテキストエディタで修正してください。", "Ak@Ne!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
 
-                            return;
-                        }
+                                        return;
+                                    }
 
-                        // メールを取得する
-                                    for(int j = 0; j < n; j++) {
-                            // 送信メールのみ必要な項目
-                            string address = reader.ReadLine();
-                            string subject = reader.ReadLine();
+                                    // メールを取得する
+                                    for (int j = 0; j < n; j++) {
+                                        // 送信メールのみ必要な項目
+                                        string address = reader.ReadLine();
+                                        string subject = reader.ReadLine();
 
-                            // 予期せぬエラーの時にメッセージボックスに表示する件名
-                            expSubject = subject;
+                                        // 予期せぬエラーの時にメッセージボックスに表示する件名
+                                        expSubject = subject;
 
-                            // ヘッダを取得する
-                            string header = "";
-                            string hd = reader.ReadLine();
+                                        // ヘッダを取得する
+                                        string header = "";
+                                        string hd = reader.ReadLine();
 
-                            // 区切り文字が来るまで文字列を連結する
-                                        while(hd != "\x03") {
-                                header = header + hd + "\r\n";
-                                hd = reader.ReadLine();
-                            }
+                                        // 区切り文字が来るまで文字列を連結する
+                                        while (hd != "\x03") {
+                                            header += hd + "\r\n";
+                                            hd = reader.ReadLine();
+                                        }
 
-                            // ヘッダのサイズが1バイト以上の場合
-                                        if(header.Length > 0) {
-                                // ヘッダープロパティにファイルから取得したヘッダを格納する
-                                pop.Header = header;
+                                        // 本文を取得する
+                                        string body = "";
+                                        string b = reader.ReadLine();
 
-                                // アドレスを取得する
-                                //pop.GetHeaderField("From:");
-                                pop.GetDecodeHeaderField("From:");
+                                        // エラー文字区切りの時対策
+                                        bool err_parse = false;
+
+                                        // 区切り文字が来るまで文字列を連結する
+                                        while (b != "\x03") {
+                                            // 区切り文字が本文の後ろについてしまったとき
+                                            if (b.Contains("\x03") && b != "\x03") {
+                                                // 区切り文字を取り除く
+                                                err_parse = true;
+                                                b = b.Replace("\x03", "");
+                                            }
+
+                                            body += b + "\r\n";
+
+                                            // 区切り文字が検出されたときは区切り文字を取り除いてループから抜ける
+                                            if (err_parse) {
+                                                break;
+                                            }
+
+                                            b = reader.ReadLine();
+                                        }
+
+                                        // 受信・送信日時を取得する
+                                        string date = reader.ReadLine();
+
+                                        // メールサイズを取得する(送信メールは0byte扱い)
+                                        string size = reader.ReadLine();
+
+                                        // UIDLを取得する(送信メールは無視)
+                                        string uidl = reader.ReadLine();
+
+                                        // 添付ファイル名を取得する(受信メールは無視)
+                                        string attach = reader.ReadLine();
+
+                                        // 既読・未読フラグを取得する
+                                        bool notReadYet = (reader.ReadLine() == "True");
+
+                                        // CCのアドレスを取得する
+                                        string cc = reader.ReadLine();
+
+                                        // BCCを取得する(受信メールは無視)
+                                        string bcc = reader.ReadLine();
+
+                                        // 重要度を取得する
+                                        string priority = reader.ReadLine();
+
+                                        // 旧ファイルを読み込んでいるとき
+                                        if (priority != "urgent" && priority != "normal" && priority != "non-urgent") {
+
+                                            // エラーフラグをtrueに変更する
+                                            errorFlag = true;
+
+                                            MessageBox.Show("Version 1.10以下のファイルを読み込もうとしています。\nメールデータ変換ツールで変換してから読み込んでください。", "Ak@Ne!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+
+                                            return;
+                                        }
+
+                                        // 変換フラグを取得する(旧バージョンからのデータ移行)
+                                        string convert = reader.ReadLine();
+
+                                        // ヘッダーがあった場合はそちらを優先する
+                                        if (header.Length > 0) {
+                                            // ヘッダープロパティにファイルから取得したヘッダを格納する
+                                            pop.Header = header;
+
+                                            // アドレスを取得する
+                                            pop.GetDecodeHeaderField("From:");
                                             address = pop.Field ?? address;
 
-                                // 件名を取得する
-                                //pop.GetHeaderField("Subject:");
-                                pop.GetDecodeHeaderField("Subject:");
+                                            // 件名を取得する
+                                            pop.GetDecodeHeaderField("Subject:");
                                             subject = pop.Field ?? subject;
-                                }
 
-                            // 本文を取得する
-                            string body = "";
-                            string b = reader.ReadLine();
+                                            // ヘッダからCCアドレスを取得する
+                                            pop.GetDecodeHeaderField("Cc:");
+                                            cc = pop.Field ?? cc;
 
-                            // エラー文字区切りの時対策
-                            bool err_parse = false;
+                                            // ヘッダから重要度を取得する
+                                            priority = Mail.ParsePriority(header);
+                                        }
 
-                            // 区切り文字が来るまで文字列を連結する
-                                        while(b != "\x03") {
-                                // 区切り文字が本文の後ろについてしまったとき
-                                            if(b.Contains("\x03") && b != "\x03") {
-                                    // 区切り文字を取り除く
-                                    err_parse = true;
-                                    b = b.Replace("\x03", "");
-                                }
-
-                                body = body + b + "\r\n";
-
-                                // 区切り文字が検出されたときは区切り文字を取り除いてループから抜ける
-                                            if(err_parse) {
-                                    break;
-                                }
-
-                                b = reader.ReadLine();
-                            }
-
-                            // 受信・送信日時を取得する
-                            string date = reader.ReadLine();
-
-                            // メールサイズを取得する(送信メールは0byte扱い)
-                            string size = reader.ReadLine();
-
-                            // UIDLを取得する(送信メールは無視)
-                            string uidl = reader.ReadLine();
-
-                            // 添付ファイル名を取得する(受信メールは無視)
-                            string attach = reader.ReadLine();
-
-                            // 既読・未読フラグを取得する
-                            bool notReadYet = (reader.ReadLine() == "True");
-
-                            // CCのアドレスを取得する
-                            string cc = reader.ReadLine();
-
-                            // ヘッダが存在するとき
-                                        if(header.Length > 0) {
-                                // ヘッダープロパティにファイルから取得したヘッダを格納する
-                                pop.Header = header;
-
-                                // ヘッダからCCアドレスを取得する
-                                pop.GetDecodeHeaderField("Cc:");
-
-                                            if(pop.Field != null) {
-                                    cc = pop.Field;
+                                        // メール格納配列に格納する
+                                        var mail = new Mail(address, header, subject, body, attach, date, size, uidl, notReadYet, convert, cc, bcc, priority);
+                                        mailList.Add(mail);
+                                    }
                                 }
                             }
-
-                            // BCCを取得する(受信メールは無視)
-                            string bcc = reader.ReadLine();
-
-                            // 重要度を取得する
-                            string priority = reader.ReadLine();
-
-                            // 旧ファイルを読み込んでいるとき
-                                        if(priority != "urgent" && priority != "normal" && priority != "non-urgent") {
-
-                                // エラーフラグをtrueに変更する
-                                errorFlag = true;
-
-                                MessageBox.Show("Version 1.10以下のファイルを読み込もうとしています。\nメールデータ変換ツールで変換してから読み込んでください。", "Ak@Ne!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-
-                                return;
-                            }
-
-                            // ヘッダが存在するとき
-                                        if(header.Length > 0) {
-                                // ヘッダから重要度を取得する
-                                priority = Mail.ParsePriority(header);
-                            }
-
-                            // 変換フラグを取得する(旧バージョンからのデータ移行)
-                            string convert = reader.ReadLine();
-
-                            // メール格納配列に格納する
-                            Mail mail = new Mail(address, header, subject, body, attach, date, size, uidl, notReadYet, convert, cc, bcc, priority);
-                            collectionMail[i].Add(mail);
                         }
                     }
-                }
-                        }
+                    catch (Exception exp) {
+                        MessageBox.Show("予期しないエラーが発生しました。\n" + "件名:" + expSubject + "\n" + "エラー詳細 : \n" + exp.Message, "Ak@Ne!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     }
-                    catch(Exception exp) {
-                    MessageBox.Show("予期しないエラーが発生しました。\n" + "件名:" + expSubject + "\n" + "エラー詳細 : \n" + exp.Message, "Ak@Ne!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                 }
             }
-        }
         }
 
         /// <summary>
