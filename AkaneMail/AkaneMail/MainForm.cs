@@ -1582,87 +1582,36 @@ namespace AkaneMail
             dataDirtyFlag = true;
         }
 
+        private Dictionary<string, int> mailbox = new Dictionary<string, int> 
+        {
+            { "差出人", RECEIVE }, 
+            { "宛先", SEND }, 
+            { "差出人または宛先", DELETE } 
+        };
         private void menuNotReadYet_Click(object sender, EventArgs e)
         {
-            // 受信メールのとき
-            if (listView1.Columns[0].Text == "差出人") {
-                // 選択アイテムの数を取得
-                int nLen = listView1.SelectedItems.Count;
+            List<Mail> sList = collectionMail[mailbox[listView1.Columns[0].Text]];
 
-                // 選択アイテムの数が0のとき
-                if (nLen == 0)
-                    return;
+            // 選択アイテムの数を取得
+            int nLen = listView1.SelectedItems.Count;
 
-                // 選択アイテムのキーを取得
-                var nIndices = Enumerable.Range(0, nLen).Select(i => listView1.SelectedItems[i].Name).Select(t => int.Parse(t)).OrderBy(i => i).ToArray();
+            // 選択アイテムの数が0のとき
+            if (nLen == 0)
+                return;
 
-                // キーの並べ替え
-                List<Mail> sList = collectionMail[RECEIVE];
+            // 選択アイテムのキーを取得
+            var nIndices = Enumerable.Range(0, nLen).Select(i => listView1.SelectedItems[i].Name).Select(t => int.Parse(t)).OrderBy(i => i).ToArray();
 
-                while (nLen > 0) {
-                    nLen--;
-                    // 選択アイテムのキーから 選択アイテム群の位置を取得
-                    int nIndex = listView1.SelectedItems.IndexOfKey(nIndices[nLen].ToString());
-                    ListViewItem item = listView1.SelectedItems[nIndex];
+            while (nLen > 0) {
+                nLen--;
+                // 選択アイテムのキーから 選択アイテム群の位置を取得
+                int nIndex = listView1.SelectedItems.IndexOfKey(nIndices[nLen].ToString());
+                ListViewItem item = listView1.SelectedItems[nIndex];
 
-                    // 元リストからメールアイテムを取得
-                    Mail mail = sList[nIndices[nLen]];
+                // 元リストからメールアイテムを取得
+                Mail mail = sList[nIndices[nLen]];
 
-                    sList[nIndices[nLen]].notReadYet = item.SubItems[1].Text == mail.subject;
-                }
-            }
-            else if (listView1.Columns[0].Text == "宛先") {
-                // 送信メールのとき
-                int nLen = listView1.SelectedItems.Count;
-
-                // 選択アイテムの数が0のとき
-                if (nLen == 0)
-                    return;
-
-                // 選択アイテムのキーを取得
-                var nIndices = Enumerable.Range(0, nLen).Select(i => listView1.SelectedItems[i].Name).Select(t => int.Parse(t)).OrderBy(i => i).ToArray();
-
-                // キーの並べ替え
-                var sList = collectionMail[SEND];
-
-                while (nLen > 0) {
-                    nLen--;
-                    // 選択アイテムのキーから 選択アイテム群の位置を取得
-                    int nIndex = listView1.SelectedItems.IndexOfKey(nIndices[nLen].ToString());
-                    ListViewItem item = listView1.SelectedItems[nIndex];
-
-                    // 元リストからメールアイテムを取得
-                    Mail mail = sList[nIndices[nLen]];
-
-                    sList[nIndices[nLen]].notReadYet = item.SubItems[1].Text == mail.subject;
-                }
-            }
-            else if (listView1.Columns[0].Text == "差出人または宛先") {
-                // 削除メールのとき
-                int nLen = listView1.SelectedItems.Count;
-
-                // 選択アイテムの数が0のとき
-                if (nLen == 0)
-                    return;
-
-                // 選択アイテムのキーを取得
-                var nIndices = Enumerable.Range(0, nLen).Select(i => listView1.SelectedItems[i].Name).Select(t => int.Parse(t)).OrderBy(i => i).ToArray();
-
-                // キーの並べ替え
-                List<Mail> sList = collectionMail[DELETE];
-
-                while (nLen > 0) {
-                    nLen--;
-
-                    // 選択アイテムのキーから 選択アイテム群の位置を取得
-                    int nIndex = listView1.SelectedItems.IndexOfKey(nIndices[nLen].ToString());
-                    ListViewItem item = listView1.SelectedItems[nIndex];
-
-                    // 元リストからメールアイテムを取得
-                    Mail mail = sList[nIndices[nLen]];
-
-                    sList[nIndices[nLen]].notReadYet = item.SubItems[1].Text == mail.subject;
-                }
+                sList[nIndices[nLen]].notReadYet = item.SubItems[1].Text == mail.subject;
             }
 
             ReforcusListView(listView1);
