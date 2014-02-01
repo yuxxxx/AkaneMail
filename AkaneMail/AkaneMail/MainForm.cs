@@ -813,7 +813,7 @@ namespace AkaneMail
                     // 未受信のメールが何件あるかチェックする
                     var countMail = new Task<int>(() =>
                     {
-                        var uidls = Enumerable.Range(1, pop.Count).Select(i => pop.GetUidl(i));
+                        var uidls = Enumerable.Range(1, pop.Count).Select(i => { pop.GetUidl(i); return pop.Uidl; });
                         var locals = collectionMail[RECEIVE].Union(collectionMail[DELETE]);
                         var unreadMails = from u in uidls
                                           join l in locals on u equals l.uidl
