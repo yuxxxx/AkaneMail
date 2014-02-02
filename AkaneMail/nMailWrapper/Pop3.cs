@@ -30,5 +30,10 @@ namespace MiniMail
             }
                 return true;
             }
+
+        public IEnumerable<Header> LoadHeader(string id, string password)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
