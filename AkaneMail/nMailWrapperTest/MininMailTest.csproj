@@ -55,8 +55,9 @@
   </Choose>
   <ItemGroup>
     <Compile Include="MailTest.cs" />
+    <Compile Include="Pop3LoadHeaderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Pop3Test.cs" />
+    <Compile Include="Pop3ConnectTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\nMailWrapper\MiniMail.csproj">
