@@ -6,8 +6,8 @@
     <ProjectGuid>{B46691A7-8651-4B10-9194-C19102DE12D5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MininMailTest</RootNamespace>
-    <AssemblyName>MininMailTest</AssemblyName>
+    <RootNamespace>MiniMailTest</RootNamespace>
+    <AssemblyName>MiniMailTest</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -35,6 +35,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.QualityTools.Testing.Fakes, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="MiniMail.Fakes">
+      <HintPath>FakesAssemblies\MiniMail.Fakes.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <Choose>
@@ -53,6 +57,15 @@
     <Compile Include="MailTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Pop3Test.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\nMailWrapper\MiniMail.csproj">
+      <Project>{b3b1a0f3-85b7-4926-ae99-1220b2ca3de8}</Project>
+      <Name>MiniMail</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Fakes Include="Fakes\MiniMail.fakes" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

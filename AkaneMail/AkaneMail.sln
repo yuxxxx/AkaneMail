@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AkaneMail", "AkaneMail\AkaneMail.csproj", "{D7F26760-9AC8-42E3-9714-6D94BF40220A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MininMail", "nMailWrapper\MininMail.csproj", "{B3B1A0F3-85B7-4926-AE99-1220B2CA3DE8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniMail", "nMailWrapper\MiniMail.csproj", "{B3B1A0F3-85B7-4926-AE99-1220B2CA3DE8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MininMailTest", "nMailWrapperTest\MininMailTest.csproj", "{B46691A7-8651-4B10-9194-C19102DE12D5}"
 EndProject

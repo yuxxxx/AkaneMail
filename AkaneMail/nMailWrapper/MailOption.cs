@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace MiniMail
 {
-    public class Mail
+    public class MailOption
     {
+        public bool UseApop { get; set; }
+
+        public bool UseSSL { get; set; }
     }
 }
