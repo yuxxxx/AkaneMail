@@ -12,6 +12,7 @@ namespace MiniMail
 
         public bool Connect(string hostName, int port, MailOption option = null)
         {
+            if (hostName == null) throw new ArgumentNullException("ホスト名をnullにすることはできません。");
             Mailer = new nMail.Pop3
             {
                 HostName = hostName,

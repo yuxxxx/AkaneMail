@@ -7,8 +7,11 @@ using System.Linq;
 
 namespace MiniMailTest
 {
+    /// <summary>
+    /// Pop3クラスのテスト
+    /// </summary>
     [TestClass]
-    public class Pop3Test
+    public class Pop3ConnectTest
     {
         private MiniMail.Pop3 pop3;
         string collectHost = "";
@@ -61,6 +64,9 @@ namespace MiniMailTest
         }
     }
 
+    /// <summary>
+    /// Pop3クラスの異常系テスト
+    /// </summary>
     [TestClass]
     public class Pop3FailureTest
     {
@@ -72,6 +78,14 @@ namespace MiniMailTest
         public void Initialize()
         {
             pop3 = new Pop3();
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void LackParameter()
+        {
+            pop3 = new Pop3();
+            pop3.Connect(null, 0);
         }
 
         [TestMethod]
@@ -102,4 +116,6 @@ namespace MiniMailTest
             }
         }
     }
+
+
 }
