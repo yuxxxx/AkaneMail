@@ -35,5 +35,15 @@ namespace MiniMail
         {
             throw new NotImplementedException();
         }
+        
+
+        private IDictionary<int, string> ParseUidls()
+        {
+            Mailer.GetUidl(nMail.Pop3.UidlAll);
+            return Mailer.Uidl.Split('\n').
+                Select(l => l.Split(' ')).
+                Where(l => l.Length == 2).
+                ToDictionary(key => int.Parse(key[0]), val => val[1]);
+        }
     }
 }

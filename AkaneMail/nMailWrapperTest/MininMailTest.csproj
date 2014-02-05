@@ -54,6 +54,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="HeaderTest.cs" />
     <Compile Include="MailTest.cs" />
     <Compile Include="Pop3LoadHeaderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
