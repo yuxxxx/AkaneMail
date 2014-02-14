@@ -31,7 +31,7 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("受信メール (0)", 1, 1);
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("送信メール (0)");
+            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("送信メール (0)", 2, 2);
             System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("ごみ箱 (0)", 3, 3);
             System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("メールボックス", new System.Windows.Forms.TreeNode[] {
             treeNode1,
@@ -92,6 +92,7 @@
             this.menuFowerdMail = new System.Windows.Forms.ToolStripMenuItem();
             this.menuDelete = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.menuAlreadyRead = new System.Windows.Forms.ToolStripMenuItem();
             this.menuNotReadYet = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.menuGetAttach = new System.Windows.Forms.ToolStripMenuItem();
@@ -462,9 +463,8 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
-            this.splitContainer1.Size = new System.Drawing.Size(1307, 748);
-            this.splitContainer1.SplitterDistance = 266;
-            this.splitContainer1.SplitterWidth = 7;
+            this.splitContainer1.Size = new System.Drawing.Size(784, 484);
+            this.splitContainer1.SplitterDistance = 159;
             this.splitContainer1.TabIndex = 3;
             // 
             // treeView1
@@ -479,21 +479,25 @@
             treeNode1.ImageIndex = 1;
             treeNode1.Name = "nodeReceive";
             treeNode1.SelectedImageIndex = 1;
+            treeNode1.Tag = "ReceiveMailBox";
             treeNode1.Text = "受信メール (0)";
-            treeNode2.ImageKey = "box_send_r.gif";
+            treeNode2.ImageIndex = 2;
             treeNode2.Name = "nodeSend";
             treeNode2.SelectedImageIndex = 2;
+            treeNode2.Tag = "SendMailBox";
             treeNode2.Text = "送信メール (0)";
             treeNode3.ImageIndex = 3;
             treeNode3.Name = "nodeDelete";
             treeNode3.SelectedImageIndex = 3;
+            treeNode3.Tag = "DeleteMailBox";
             treeNode3.Text = "ごみ箱 (0)";
             treeNode4.Name = "rootMail";
+            treeNode4.Tag = "MailBoxRoot";
             treeNode4.Text = "メールボックス";
             this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode4});
             this.treeView1.SelectedImageIndex = 0;
-            this.treeView1.Size = new System.Drawing.Size(266, 748);
+            this.treeView1.Size = new System.Drawing.Size(159, 484);
             this.treeView1.TabIndex = 0;
             this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
             // 
@@ -502,13 +506,13 @@
             this.menuTreeView.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuClearTrush});
             this.menuTreeView.Name = "contextMenuStrip2";
-            this.menuTreeView.Size = new System.Drawing.Size(249, 32);
+            this.menuTreeView.Size = new System.Drawing.Size(203, 26);
             this.menuTreeView.Opening += new System.ComponentModel.CancelEventHandler(this.menuTreeView_Opening);
             // 
             // menuClearTrush
             // 
             this.menuClearTrush.Name = "menuClearTrush";
-            this.menuClearTrush.Size = new System.Drawing.Size(248, 28);
+            this.menuClearTrush.Size = new System.Drawing.Size(202, 22);
             this.menuClearTrush.Text = "ごみ箱を空にする(&Y)...";
             this.menuClearTrush.Click += new System.EventHandler(this.menuFileClearTrush_Click);
             // 
@@ -537,9 +541,8 @@
             // 
             this.splitContainer2.Panel2.Controls.Add(this.textBody);
             this.splitContainer2.Panel2.Controls.Add(this.browserBody);
-            this.splitContainer2.Size = new System.Drawing.Size(1034, 748);
-            this.splitContainer2.SplitterDistance = 284;
-            this.splitContainer2.SplitterWidth = 6;
+            this.splitContainer2.Size = new System.Drawing.Size(621, 484);
+            this.splitContainer2.SplitterDistance = 183;
             this.splitContainer2.TabIndex = 0;
             // 
             // listView1
@@ -556,7 +559,7 @@
             this.listView1.Location = new System.Drawing.Point(0, 0);
             this.listView1.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(1034, 284);
+            this.listView1.Size = new System.Drawing.Size(621, 183);
             this.listView1.Sorting = System.Windows.Forms.SortOrder.Ascending;
             this.listView1.TabIndex = 1;
             this.listView1.UseCompatibleStateImageBehavior = false;
@@ -598,55 +601,63 @@
             this.menuFowerdMail,
             this.menuDelete,
             this.toolStripSeparator3,
+            this.menuAlreadyRead,
             this.menuNotReadYet,
             this.toolStripMenuItem1,
             this.menuGetAttach});
             this.menuListView.Name = "contextMenuStrip1";
-            this.menuListView.Size = new System.Drawing.Size(273, 156);
+            this.menuListView.Size = new System.Drawing.Size(228, 170);
             this.menuListView.Opening += new System.ComponentModel.CancelEventHandler(this.menuListView_Opening);
             // 
             // menuReturnMail
             // 
             this.menuReturnMail.Name = "menuReturnMail";
-            this.menuReturnMail.Size = new System.Drawing.Size(272, 28);
+            this.menuReturnMail.Size = new System.Drawing.Size(227, 22);
             this.menuReturnMail.Text = "返信(&R)";
             this.menuReturnMail.Click += new System.EventHandler(this.menuMailReturnMail_Click);
             // 
             // menuFowerdMail
             // 
             this.menuFowerdMail.Name = "menuFowerdMail";
-            this.menuFowerdMail.Size = new System.Drawing.Size(272, 28);
+            this.menuFowerdMail.Size = new System.Drawing.Size(227, 22);
             this.menuFowerdMail.Text = "転送(&T)";
             this.menuFowerdMail.Click += new System.EventHandler(this.menuMailFowerdMail_Click);
             // 
             // menuDelete
             // 
             this.menuDelete.Name = "menuDelete";
-            this.menuDelete.Size = new System.Drawing.Size(272, 28);
+            this.menuDelete.Size = new System.Drawing.Size(227, 22);
             this.menuDelete.Text = "削除(&D)";
             this.menuDelete.Click += new System.EventHandler(this.menuMailDelete_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(269, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(224, 6);
+            // 
+            // menuAlreadyRead
+            // 
+            this.menuAlreadyRead.Name = "menuAlreadyRead";
+            this.menuAlreadyRead.Size = new System.Drawing.Size(227, 22);
+            this.menuAlreadyRead.Text = "既読にする(&K)";
+            this.menuAlreadyRead.Click += new System.EventHandler(this.menuAlreadyRead_Click);
             // 
             // menuNotReadYet
             // 
             this.menuNotReadYet.Name = "menuNotReadYet";
-            this.menuNotReadYet.Size = new System.Drawing.Size(272, 28);
-            this.menuNotReadYet.Text = "未読にする(&N)";
+            this.menuNotReadYet.Size = new System.Drawing.Size(227, 22);
+            this.menuNotReadYet.Text = "未読にする(&U)";
             this.menuNotReadYet.Click += new System.EventHandler(this.menuNotReadYet_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(269, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(224, 6);
             // 
             // menuGetAttach
             // 
             this.menuGetAttach.Name = "menuGetAttach";
-            this.menuGetAttach.Size = new System.Drawing.Size(272, 28);
+            this.menuGetAttach.Size = new System.Drawing.Size(227, 22);
             this.menuGetAttach.Text = "添付ファイルを取り出す(&G)";
             this.menuGetAttach.Click += new System.EventHandler(this.menuFileGetAttatch_Click);
             // 
@@ -658,7 +669,7 @@
             this.textBody.Multiline = true;
             this.textBody.Name = "textBody";
             this.textBody.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBody.Size = new System.Drawing.Size(1034, 458);
+            this.textBody.Size = new System.Drawing.Size(621, 297);
             this.textBody.TabIndex = 2;
             // 
             // browserBody
@@ -670,7 +681,7 @@
             this.browserBody.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             this.browserBody.MinimumSize = new System.Drawing.Size(33, 30);
             this.browserBody.Name = "browserBody";
-            this.browserBody.Size = new System.Drawing.Size(1034, 458);
+            this.browserBody.Size = new System.Drawing.Size(621, 297);
             this.browserBody.TabIndex = 3;
             this.browserBody.TabStop = false;
             this.browserBody.Visible = false;
@@ -711,36 +722,36 @@
             this.toolStripSeparator8,
             this.menuTaskApplicationExit});
             this.contextMenuStrip3.Name = "contextMenuStrip3";
-            this.contextMenuStrip3.Size = new System.Drawing.Size(265, 100);
+            this.contextMenuStrip3.Size = new System.Drawing.Size(227, 82);
             // 
             // menuTaskRestoreWindow
             // 
             this.menuTaskRestoreWindow.Name = "menuTaskRestoreWindow";
-            this.menuTaskRestoreWindow.Size = new System.Drawing.Size(264, 28);
+            this.menuTaskRestoreWindow.Size = new System.Drawing.Size(226, 22);
             this.menuTaskRestoreWindow.Text = "元のサイズに戻す(&R)";
             this.menuTaskRestoreWindow.Click += new System.EventHandler(this.menuTaskRestoreWindow_Click);
             // 
             // toolStripSeparator7
             // 
             this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(261, 6);
+            this.toolStripSeparator7.Size = new System.Drawing.Size(223, 6);
             // 
             // menuTaskMailNew
             // 
             this.menuTaskMailNew.Name = "menuTaskMailNew";
-            this.menuTaskMailNew.Size = new System.Drawing.Size(264, 28);
+            this.menuTaskMailNew.Size = new System.Drawing.Size(226, 22);
             this.menuTaskMailNew.Text = "新規作成(&N)";
             this.menuTaskMailNew.Click += new System.EventHandler(this.menuMailNew_Click);
             // 
             // toolStripSeparator8
             // 
             this.toolStripSeparator8.Name = "toolStripSeparator8";
-            this.toolStripSeparator8.Size = new System.Drawing.Size(261, 6);
+            this.toolStripSeparator8.Size = new System.Drawing.Size(223, 6);
             // 
             // menuTaskApplicationExit
             // 
             this.menuTaskApplicationExit.Name = "menuTaskApplicationExit";
-            this.menuTaskApplicationExit.Size = new System.Drawing.Size(264, 28);
+            this.menuTaskApplicationExit.Size = new System.Drawing.Size(226, 22);
             this.menuTaskApplicationExit.Text = "アプリケーションの終了(&X)";
             this.menuTaskApplicationExit.Click += new System.EventHandler(this.menuFileExit_Click);
             // 
@@ -755,6 +766,7 @@
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Ak@Ne!";
@@ -858,6 +870,7 @@
         private System.Windows.Forms.ToolStripMenuItem menuTaskMailNew;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
         private System.Windows.Forms.ToolStripMenuItem menuTaskApplicationExit;
+        private System.Windows.Forms.ToolStripMenuItem menuAlreadyRead;
     }
 }
 
