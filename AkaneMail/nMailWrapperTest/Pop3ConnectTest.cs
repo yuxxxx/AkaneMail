@@ -56,6 +56,21 @@ namespace MiniMailTest
             }
         }
 
+        [TestMethod]
+        public void CanConnectReal()
+        {
+            string[] account;
+            using(var reader = new System.IO.StreamReader("Identify.txt"))
+            {
+                account = reader.ReadToEnd().Split("\n".ToArray());
+            }
+            var option = new MiniMail.MailOption() { UseSSL = true };
+            var pop3 = new MiniMail.Pop3();
+            bool connect = pop3.Connect("pop.gmail.com", 995, option);
+            var result = pop3.LoadHeader(account[0], account[1]);
+            Assert.IsNotNull(result);
+        }
+
 
         [TestCleanup]
         public void Cleanup()

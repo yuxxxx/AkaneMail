@@ -12,12 +12,14 @@ namespace MiniMail
 
         public bool Connect(string hostName, int port, MailOption option = null)
         {
+            nMail.Winsock.Initialize();
             if (hostName == null) throw new ArgumentNullException("ホスト名をnullにすることはできません。");
             Mailer = new nMail.Pop3
             {
                 HostName = hostName,
                 Port = port
             };
+            nMail.Options.EnableConnectTimeout();
             if (option != null) {
                 Mailer.APop = option.UseApop;
                 Mailer.SSL = option.UseSSL ? nMail.Pop3.SSL3 : Mailer.SSL;
